@@ -1,16 +1,43 @@
 import 'reflect-metadata';
 import 'dotenv/config';
-import bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { connectWithRetry, AppDataSource } from '../config/database';
+import { Admin } from '../entities/Admin';
 
 async function seed() {
-    await connectWithRetry();
-    const repo = AppDataSource.getRepository(require('../entities/Admin').Admin);
-    const email = process.env.ADMIN_EMAIL || 'admin@example.com';
-    const password = process.env.ADMIN_PASSWORD || 'Admin1234!';
-    if (await repo.findOne({ where: { email } })) { console.log('✅ Admin already exists:', email); process.exit(0); }
-    await repo.save(repo.create({ email, password_hash: await bcrypt.hash(password, 12) }));
-    console.log(`✅ Admin created: ${email} / ${password}`);
-    process.exit(0);
+    try {
+        await connectWithRetry();
+        console.log('✅ Database connected');
+        
+        const repo = AppDataSource.getRepository(Admin);
+        const email = process.env.ADMIN_EMAIL || 'admin@example.com';
+        const password = process.env.ADMIN_PASSWORD || 'Admin1234!';
+        
+        console.log(`🔍 Checking for existing admin: ${email}`);
+        await repo.delete({ email });
+        console.log('🗑️  Deleted any existing admin');
+        
+        console.log('🔐 Hashing password...');
+        const passwordHash = bcrypt.hashSync(password, 12);
+        console.log('✅ Password hashed');
+        
+        console.log('💾 Creating admin user...');
+        const admin = repo.create({ 
+            email, 
+            password_hash: passwordHash 
+        });
+        
+        await repo.save(admin);
+        console.log(`✅ Admin created successfully: ${email} / ${password}`);
+        
+        const count = await repo.count();
+        console.log(`📊 Total admins in database: ${count}`);
+        
+        process.exit(0);
+    } catch (e) {
+        console.error('❌ Seed failed:', e);
+        process.exit(1);
+    }
 }
-seed().catch((e) => { console.error('❌ Seed failed:', e); process.exit(1); });
+
+seed();

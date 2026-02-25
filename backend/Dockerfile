@@ -1,18 +1,17 @@
-# ── Stage 1: Build ─────────────────────────────────────────────────────────
-FROM node:20-alpine AS builder
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY tsconfig.json ./
-COPY src ./src
-RUN npm run build
+# ── Development Setup ──────────────────────────────────────────────────────
+FROM node:20-alpine
 
-# ── Stage 2: Production ─────────────────────────────────────────────────────
-FROM node:20-alpine AS runner
 WORKDIR /app
-ENV NODE_ENV=production
+
+# Install dependencies
 COPY package*.json ./
-RUN npm ci --omit=dev
-COPY --from=builder /app/dist ./dist
+RUN npm install
+
+# Copy source code (will be overridden by volume mount in dev)
+COPY . .
+
+# Expose port
 EXPOSE 4000
-CMD ["node", "dist/server.js"]
+
+# Run in development mode with hot reload
+CMD ["npm", "run", "dev"]

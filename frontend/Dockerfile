@@ -1,27 +1,17 @@
-# ── Stage 1: Install deps & build ──────────────────────────────────────────
-FROM node:20-alpine AS builder
+# ── Development Setup ──────────────────────────────────────────────────────
+FROM node:20-alpine
+
 WORKDIR /app
 
+# Install dependencies
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 
+# Copy source code (will be overridden by volume mount in dev)
 COPY . .
-RUN npm run build
 
-# ── Stage 2: Production runner ──────────────────────────────────────────────
-FROM node:20-alpine AS runner
-WORKDIR /app
-
-ENV NODE_ENV=production
-
-RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
-
-COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-USER nextjs
+# Expose port
 EXPOSE 3000
-ENV PORT=3000 HOSTNAME="0.0.0.0"
 
-CMD ["node", "server.js"]
+# Run in development mode with hot reload
+CMD ["npm", "run", "dev"]
