@@ -21,34 +21,60 @@ cp .env.example .env
 # Edit .env — at minimum change DB_PASSWORD and JWT_SECRET
 ```
 
-### 2. Start everything
+### 2. Start the database
 
 ```bash
-docker compose up --build -d
+docker compose up postgres -d
 ```
 
-### 3. Run database migrations
+### 3. Install dependencies
 
 ```bash
-docker compose exec backend npm run migration:run
+# Backend
+cd backend
+npm install
+
+# Frontend (in a new terminal)
+cd frontend
+npm install
 ```
 
-### 4. Create first admin account
+### 4. Run database migrations
 
 ```bash
-docker compose exec backend npm run seed:admin
+cd backend
+npm run migration:run
+```
+
+### 5. Create first admin account
+
+```bash
+cd backend
+npm run seed:admin
 # Creates: admin@example.com / Admin1234!
 # Override via ADMIN_EMAIL and ADMIN_PASSWORD in .env
 ```
 
-### 5. Open the app
+### 6. Start the development servers
+
+```bash
+# Backend (port 4000)
+cd backend
+npm run dev
+
+# Frontend (in a new terminal, port 3000)
+cd frontend
+npm run dev
+```
+
+### 7. Open the app
 
 | URL | Purpose |
 |---|---|
-| `http://localhost/admin/login` | Admin login |
-| `http://localhost/admin/dashboard` | Admin dashboard |
-| `http://localhost/e/<EVENT_CODE>` | Participant submission |
-| `http://localhost/display/<EVENT_CODE>` | Public display screen |
+| `http://localhost:3000/admin/login` | Admin login |
+| `http://localhost:3000/admin/dashboard` | Admin dashboard |
+| `http://localhost:3000/e/<EVENT_CODE>` | Participant submission |
+| `http://localhost:3000/display/<EVENT_CODE>` | Public display screen |
 
 ---
 
@@ -65,10 +91,9 @@ docker compose exec backend npm run seed:admin
 
 | Service | Exposes | Description |
 |---|---|---|
-| `postgres` | Internal only | PostgreSQL 16 with persistent volume |
-| `backend` | Internal `:4000` | Express API + Socket.io |
-| `frontend` | Internal `:3000` | Next.js 14 |
-| `nginx` | **`:80`** | Reverse proxy (entry point) |
+| `postgres` | `5432:5432` | PostgreSQL 16 with persistent volume |
+
+**Note**: Backend and frontend run locally in development mode, not in Docker.
 
 ---
 
@@ -77,10 +102,11 @@ docker compose exec backend npm run seed:admin
 ```bash
 # Run pending migrations
 docker compose exec backend npm run migration:run
+cd backend
+npm run migration:run
 
 # Revert last migration
-docker compose exec backend npm run migration:revert
-```
+
 
 ---
 
