@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { QRCodeSVG } from 'qrcode.react';
 import api from '@/lib/api';
 import { Event } from '@/types';
+import { Alert, Confirm } from '@/components/shared/Alert';
 
 export default function AdminDashboard() {
     const router = useRouter();
@@ -15,6 +16,8 @@ export default function AdminDashboard() {
     const [title, setTitle] = useState('');
     const [error, setError] = useState('');
     const [qrModal, setQrModal] = useState<Event | null>(null);
+    const [alert, setAlert] = useState<{ title: string; message: string; type: 'success' | 'error' | 'warning' | 'info' } | null>(null);
+    const [confirmDialog, setConfirmDialog] = useState<{ title: string; message: string; onConfirm: () => void } | null>(null);
 
     const fetchEvents = useCallback(async () => {
         try {
@@ -47,11 +50,19 @@ export default function AdminDashboard() {
     };
 
     const deleteEvent = async (id: string) => {
-        if (!confirm('Delete this event and all its questions?')) return;
-        try {
-            await api.delete(`/api/admin/events/${id}`);
-            setEvents((prev) => prev.filter((ev) => ev.id !== id));
-        } catch { alert('Failed to delete event'); }
+        setConfirmDialog({
+            title: 'Delete Event',
+            message: 'Are you sure you want to delete this event and all its questions? This action cannot be undone.',
+            onConfirm: async () => {
+                setConfirmDialog(null);
+                try {
+                    await api.delete(`/api/admin/events/${id}`);
+                    setEvents((prev) => prev.filter((ev) => ev.id !== id));
+                } catch {
+                    setAlert({ title: 'Error', message: 'Failed to delete event. Please try again.', type: 'error' });
+                }
+            },
+        });
     };
 
     const logout = async () => {
@@ -181,6 +192,12 @@ export default function AdminDashboard() {
                     </div>
                 </div>
             )}
+
+            {/* Alert */}
+            {alert && <Alert title={alert.title} message={alert.message} type={alert.type} onClose={() => setAlert(null)} />}
+
+            {/* Confirm Dialog */}
+            {confirmDialog && <Confirm title={confirmDialog.title} message={confirmDialog.message} onConfirm={confirmDialog.onConfirm} onCancel={() => setConfirmDialog(null)} />}
         </div>
     );
 }

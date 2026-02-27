@@ -6,6 +6,7 @@ import Link from 'next/link';
 import api from '@/lib/api';
 import { connectSocket, disconnectSocket } from '@/lib/socket';
 import { Question, Event } from '@/types';
+import { Alert, Confirm } from '@/components/shared/Alert';
 
 type Tab = 'PENDING' | 'APPROVED' | 'REJECTED';
 
@@ -24,6 +25,8 @@ export default function EventModerationPage({ params }: { params: { id: string }
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState<string | null>(null);
+    const [alert, setAlert] = useState<{ title: string; message: string; type: 'success' | 'error' | 'warning' | 'info' } | null>(null);
+    const [confirmDialog, setConfirmDialog] = useState<{ title: string; message: string; onConfirm: () => void } | null>(null);
 
     const fetchData = useCallback(async () => {
         try {
@@ -57,15 +60,27 @@ export default function EventModerationPage({ params }: { params: { id: string }
             setQuestions(prev => prev.map(q => q.id === qid ? res.data : q));
         } catch (err: unknown) {
             const e = err as { response?: { data?: { error?: string } } };
-            alert(e.response?.data?.error || 'Action failed');
+            setAlert({ title: 'Action Failed', message: e.response?.data?.error || 'Failed to perform action. Please try again.', type: 'error' });
         } finally { setActionLoading(null); }
     };
 
     const del = async (qid: string) => {
-        if (!confirm('Delete this question?')) return;
-        setActionLoading(qid + 'delete');
-        try { await api.delete(`/api/admin/questions/${qid}`); setQuestions(prev => prev.filter(q => q.id !== qid)); }
-        catch { alert('Failed to delete'); } finally { setActionLoading(null); }
+        setConfirmDialog({
+            title: 'Delete Question',
+            message: 'Are you sure you want to delete this question? This action cannot be undone.',
+            onConfirm: async () => {
+                setConfirmDialog(null);
+                setActionLoading(qid + 'delete');
+                try {
+                    await api.delete(`/api/admin/questions/${qid}`);
+                    setQuestions(prev => prev.filter(q => q.id !== qid));
+                } catch {
+                    setAlert({ title: 'Error', message: 'Failed to delete question. Please try again.', type: 'error' });
+                } finally {
+                    setActionLoading(null);
+                }
+            },
+        });
     };
 
     const filtered = questions
@@ -193,6 +208,12 @@ export default function EventModerationPage({ params }: { params: { id: string }
                     </div>
                 )}
             </main>
+
+            {/* Alert */}
+            {alert && <Alert title={alert.title} message={alert.message} type={alert.type} onClose={() => setAlert(null)} />}
+
+            {/* Confirm Dialog */}
+            {confirmDialog && <Confirm title={confirmDialog.title} message={confirmDialog.message} onConfirm={confirmDialog.onConfirm} onCancel={() => setConfirmDialog(null)} />}
         </div>
     );
 }
