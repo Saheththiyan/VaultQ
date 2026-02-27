@@ -36,18 +36,15 @@ export default function DisplayPage({ params }: { params: { eventCode: string } 
         };
         const onHidden = (q: Question) => setQuestions(prev => prev.filter(x => x.id !== q.id));
         const onRemoved = ({ id }: { id: string }) => setQuestions(prev => prev.filter(x => x.id !== id));
-        const onApproved = (q: Question) => { if (q.is_visible) setQuestions(prev => prev.find(x => x.id === q.id) ? prev.map(x => x.id === q.id ? q : x) : [...prev, q]); };
 
         socket.on('question:visible', onVisible);
         socket.on('question:hidden', onHidden);
         socket.on('question:removed', onRemoved);
-        socket.on('question:approved', onApproved);
 
         return () => {
             socket.off('question:visible', onVisible);
             socket.off('question:hidden', onHidden);
             socket.off('question:removed', onRemoved);
-            socket.off('question:approved', onApproved);
             disconnectSocket();
         };
     }, [fetchQuestions, eventCode]);

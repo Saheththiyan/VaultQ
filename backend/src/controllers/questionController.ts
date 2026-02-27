@@ -38,8 +38,8 @@ export const rejectQuestion = async (req: Request, res: Response): Promise<void>
     catch (err) { handleErr(res, err); }
 };
 
-export const toggleVisibility = async (req: Request, res: Response): Promise<void> => {
-    try { res.json(await questionService.toggleVisibility(req.params.id)); }
+export const markAnswered = async (req: Request, res: Response): Promise<void> => {
+    try { res.json(await questionService.markAnswered(req.params.id)); }
     catch (err) { handleErr(res, err); }
 };
 

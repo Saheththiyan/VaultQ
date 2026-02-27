@@ -5,6 +5,7 @@ export enum QuestionStatus {
     PENDING = 'PENDING',
     APPROVED = 'APPROVED',
     REJECTED = 'REJECTED',
+    ANSWERED = 'ANSWERED',
 }
 
 @Index(['event_id', 'status'])

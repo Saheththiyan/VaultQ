@@ -8,12 +8,13 @@ import { connectSocket, disconnectSocket } from '@/lib/socket';
 import { Question, Event } from '@/types';
 import { Alert, Confirm } from '@/components/shared/Alert';
 
-type Tab = 'PENDING' | 'APPROVED' | 'REJECTED';
+type Tab = 'PENDING' | 'APPROVED' | 'REJECTED' | 'ANSWERED';
 
 const STATUS_COLORS: Record<string, string> = {
     PENDING: 'bg-amber-500/15 text-amber-400',
     APPROVED: 'bg-green-500/15 text-green-400',
     REJECTED: 'bg-red-500/15 text-red-400',
+    ANSWERED: 'bg-blue-500/15 text-blue-400',
 };
 
 export default function EventModerationPage({ params }: { params: { id: string } }) {
@@ -91,6 +92,7 @@ export default function EventModerationPage({ params }: { params: { id: string }
         PENDING: questions.filter(q => q.status === 'PENDING').length,
         APPROVED: questions.filter(q => q.status === 'APPROVED').length,
         REJECTED: questions.filter(q => q.status === 'REJECTED').length,
+        ANSWERED: questions.filter(q => q.status === 'ANSWERED').length,
     };
 
     const logout = async () => { await api.post('/api/admin/logout'); router.push('/admin/login'); };
@@ -115,7 +117,7 @@ export default function EventModerationPage({ params }: { params: { id: string }
                             Display ↗
                         </Link>
                     )}
-                    <button onClick={logout} className="text-slate-400 hover:text-white text-sm transition px-3 py-1.5 rounded-lg hover:bg-slate-800">Out</button>
+                    <button onClick={logout} className="text-slate-400 hover:text-white text-sm transition px-3 py-1.5 rounded-lg hover:bg-slate-800">Sign Out</button>
                 </div>
             </header>
 
@@ -123,7 +125,7 @@ export default function EventModerationPage({ params }: { params: { id: string }
                 {/* Tabs + search */}
                 <div className="flex flex-col sm:flex-row gap-3 mb-6">
                     <div className="flex gap-1 bg-slate-900 border border-slate-800 rounded-xl p-1">
-                        {(['PENDING', 'APPROVED', 'REJECTED'] as Tab[]).map(t => (
+                        {(['PENDING', 'APPROVED', 'REJECTED', 'ANSWERED'] as Tab[]).map(t => (
                             <button key={t} onClick={() => setTab(t)}
                                 className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-medium transition ${tab === t ? 'bg-violet-600 text-white' : 'text-slate-400 hover:text-white'}`}>
                                 {t.charAt(0) + t.slice(1).toLowerCase()}
@@ -154,11 +156,6 @@ export default function EventModerationPage({ params }: { params: { id: string }
                                         <p className="text-white text-sm leading-relaxed">{q.content}</p>
                                         <div className="flex items-center gap-3 mt-2">
                                             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[q.status]}`}>{q.status}</span>
-                                            {q.status === 'APPROVED' && (
-                                                <span className={`text-xs px-2 py-0.5 rounded-full ${q.is_visible ? 'bg-cyan-500/15 text-cyan-400' : 'bg-slate-700 text-slate-400'}`}>
-                                                    {q.is_visible ? '● Visible' : '○ Hidden'}
-                                                </span>
-                                            )}
                                             <span className="text-xs text-slate-600">{new Date(q.created_at).toLocaleTimeString()}</span>
                                         </div>
                                     </div>
@@ -179,9 +176,9 @@ export default function EventModerationPage({ params }: { params: { id: string }
                                         )}
                                         {q.status === 'APPROVED' && (
                                             <>
-                                                <button onClick={() => action('toggle-visibility', q.id)} disabled={!!actionLoading}
-                                                    className={`px-3 py-1.5 text-xs rounded-lg font-medium transition disabled:opacity-50 ${q.is_visible ? 'bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-400' : 'bg-slate-700 hover:bg-slate-600 text-slate-300'}`}>
-                                                    {actionLoading === q.id + 'toggle-visibility' ? '…' : q.is_visible ? 'Hide' : 'Show'}
+                                                <button onClick={() => action('mark-answered', q.id)} disabled={!!actionLoading}
+                                                    className="px-3 py-1.5 text-xs rounded-lg bg-blue-500/15 hover:bg-blue-500/25 text-blue-400 font-medium transition disabled:opacity-50">
+                                                    {actionLoading === q.id + 'mark-answered' ? '…' : 'Answered'}
                                                 </button>
                                                 <button onClick={() => action('reject', q.id)} disabled={!!actionLoading}
                                                     className="px-3 py-1.5 text-xs rounded-lg bg-red-500/15 hover:bg-red-500/25 text-red-400 font-medium transition disabled:opacity-50">
@@ -195,12 +192,20 @@ export default function EventModerationPage({ params }: { params: { id: string }
                                                 {actionLoading === q.id + 'approve' ? '…' : 'Re-approve'}
                                             </button>
                                         )}
-                                        <button onClick={() => del(q.id)} disabled={!!actionLoading}
-                                            className="p-1.5 rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-500/10 transition disabled:opacity-50">
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                            </svg>
-                                        </button>
+                                        {q.status !== 'ANSWERED' && (
+                                            <button onClick={() => del(q.id)} disabled={!!actionLoading}
+                                                className="p-1.5 rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-500/10 transition disabled:opacity-50">
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+                                        )}
+                                        {q.status === 'ANSWERED' && (
+                                            <button onClick={() => del(q.id)} disabled={!!actionLoading}
+                                                className="px-3 py-1.5 text-xs rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-500/10 transition disabled:opacity-50">
+                                                {actionLoading === q.id + 'delete' ? '…' : 'Delete'}
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             </div>

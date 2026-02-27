@@ -2,7 +2,7 @@ export interface Question {
     id: string;
     event_id: string;
     content: string;
-    status: 'PENDING' | 'APPROVED' | 'REJECTED';
+    status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'ANSWERED';
     is_visible: boolean;
     created_at: string;
 }

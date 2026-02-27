@@ -22,7 +22,7 @@ export class QuestionService {
         const event = await EventRepository.findOne({ where: { event_code: eventCode } });
         if (!event) throw new Error('Event not found');
         return QuestionRepository.find({
-            where: { event_id: event.id, status: QuestionStatus.APPROVED, is_visible: true },
+            where: { event_id: event.id, status: QuestionStatus.APPROVED },
             order: { created_at: 'ASC' },
         });
     }
@@ -31,8 +31,9 @@ export class QuestionService {
         const q = await QuestionRepository.findOne({ where: { id }, relations: ['event'] });
         if (!q) throw new Error('Question not found');
         q.status = QuestionStatus.APPROVED;
+        q.is_visible = true;
         const saved = await QuestionRepository.save(q);
-        socketService.emitToDisplayRoom(q.event.event_code, 'question:approved', saved);
+        socketService.emitToDisplayRoom(q.event.event_code, 'question:visible', saved);
         socketService.emitToAdminRoom(q.event_id, 'question:updated', saved);
         return saved;
     }
@@ -40,20 +41,23 @@ export class QuestionService {
     async rejectQuestion(id: string): Promise<Question> {
         const q = await QuestionRepository.findOne({ where: { id }, relations: ['event'] });
         if (!q) throw new Error('Question not found');
+        const wasVisible = q.is_visible;
         q.status = QuestionStatus.REJECTED;
-        if (q.is_visible) { q.is_visible = false; socketService.emitToDisplayRoom(q.event.event_code, 'question:removed', { id }); }
+        q.is_visible = false;
         const saved = await QuestionRepository.save(q);
+        if (wasVisible) socketService.emitToDisplayRoom(q.event.event_code, 'question:hidden', saved);
         socketService.emitToAdminRoom(q.event_id, 'question:updated', saved);
         return saved;
     }
 
-    async toggleVisibility(id: string): Promise<Question> {
+    async markAnswered(id: string): Promise<Question> {
         const q = await QuestionRepository.findOne({ where: { id }, relations: ['event'] });
         if (!q) throw new Error('Question not found');
-        if (q.status !== QuestionStatus.APPROVED) throw new Error('Only approved questions can be toggled');
-        q.is_visible = !q.is_visible;
+        if (q.status !== QuestionStatus.APPROVED) throw new Error('Only approved questions can be marked as answered');
+        q.status = QuestionStatus.ANSWERED;
+        q.is_visible = false;
         const saved = await QuestionRepository.save(q);
-        socketService.emitToDisplayRoom(q.event.event_code, saved.is_visible ? 'question:visible' : 'question:hidden', saved);
+        socketService.emitToDisplayRoom(q.event.event_code, 'question:hidden', saved);
         socketService.emitToAdminRoom(q.event_id, 'question:updated', saved);
         return saved;
     }
@@ -61,7 +65,9 @@ export class QuestionService {
     async deleteQuestion(id: string): Promise<void> {
         const q = await QuestionRepository.findOne({ where: { id }, relations: ['event'] });
         if (!q) throw new Error('Question not found');
-        if (q.is_visible) socketService.emitToDisplayRoom(q.event.event_code, 'question:removed', { id });
+        if (q.status === QuestionStatus.APPROVED && q.is_visible) {
+            socketService.emitToDisplayRoom(q.event.event_code, 'question:removed', { id });
+        }
         socketService.emitToAdminRoom(q.event_id, 'question:deleted', { id });
         await QuestionRepository.delete(id);
     }
