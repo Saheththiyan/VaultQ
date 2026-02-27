@@ -72,6 +72,56 @@ export default function AdminDashboard() {
 
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
 
+    const downloadQR = () => {
+        if (!qrModal) return;
+        
+        // Get the SVG element
+        const svg = document.querySelector('#qr-code-svg') as SVGElement;
+        if (!svg) return;
+
+        // Create a canvas
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        // Set canvas size (add padding)
+        const padding = 40;
+        const qrSize = 200;
+        canvas.width = qrSize + padding * 2;
+        canvas.height = qrSize + padding * 2;
+
+        // Fill white background
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Convert SVG to image
+        const svgData = new XMLSerializer().serializeToString(svg);
+        const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(svgBlob);
+
+        const img = new Image();
+        img.onload = () => {
+            // Draw the QR code with padding
+            ctx.drawImage(img, padding, padding, qrSize, qrSize);
+            
+            // Convert canvas to blob and download
+            canvas.toBlob((blob) => {
+                if (!blob) return;
+                const downloadUrl = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = downloadUrl;
+                link.download = `${qrModal.event_code}-qr.png`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(downloadUrl);
+            }, 'image/png');
+            
+            URL.revokeObjectURL(url);
+        };
+        img.src = url;
+    };
+
     return (
         <div className="min-h-screen bg-slate-950 text-white">
             {/* Header */}
@@ -184,11 +234,19 @@ export default function AdminDashboard() {
                         <h3 className="font-semibold text-xl mb-1">{qrModal.title}</h3>
                         <p className="text-slate-400 text-sm mb-6">Scan to submit a question</p>
                         <div className="inline-block bg-white p-4 rounded-xl mb-4">
-                            <QRCodeSVG value={`${origin}/e/${qrModal.event_code}`} size={200} />
+                            <QRCodeSVG id="qr-code-svg" value={`${origin}/e/${qrModal.event_code}`} size={200} />
                         </div>
                         <p className="text-violet-400 font-mono text-lg font-bold tracking-widest mb-4">{qrModal.event_code}</p>
                         <p className="text-slate-500 text-xs break-all mb-4">{origin}/e/{qrModal.event_code}</p>
-                        <button onClick={() => setQrModal(null)} className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-sm transition">Close</button>
+                        <div className="flex gap-2">
+                            <button onClick={downloadQR} className="flex-1 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-sm transition font-medium flex items-center justify-center gap-2">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                                Download
+                            </button>
+                            <button onClick={() => setQrModal(null)} className="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-sm transition">Close</button>
+                        </div>
                     </div>
                 </div>
             )}
