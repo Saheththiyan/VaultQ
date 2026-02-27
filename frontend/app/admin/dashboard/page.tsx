@@ -67,12 +67,8 @@ export default function AdminDashboard() {
             <header className="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-10">
                 <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-violet-600/30 border border-violet-500/40 flex items-center justify-center">
-                            <svg className="w-4 h-4 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                            </svg>
-                        </div>
-                        <span className="font-semibold text-lg">Q&A Admin</span>
+                        <img src="/logo.png" alt="VaultQ" className="w-8 h-8 object-contain" />
+                        <span className="font-semibold text-lg">VaultQ Admin</span>
                     </div>
                     <button onClick={logout} className="text-slate-400 hover:text-white text-sm transition px-3 py-1.5 rounded-lg hover:bg-slate-800">
                         Sign out
