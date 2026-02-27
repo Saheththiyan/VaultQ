@@ -101,43 +101,45 @@ export default function EventModerationPage({ params }: { params: { id: string }
         <div className="min-h-screen bg-slate-950 text-white">
             {/* Header */}
             <header className="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-10">
-                <div className="max-w-7xl mx-auto px-4 h-16 flex items-center gap-4">
+                <div className="max-w-7xl mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center gap-2 sm:gap-4">
                     <Link href="/admin/dashboard" className="text-slate-400 hover:text-white transition p-1">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                         </svg>
                     </Link>
                     <div className="flex-1 min-w-0">
-                        <h1 className="font-semibold truncate">{event?.title || 'Loading…'}</h1>
+                        <h1 className="text-sm sm:text-base font-semibold truncate">{event?.title || 'Loading…'}</h1>
                         {event && <p className="text-xs text-slate-500 font-mono">{event.event_code}</p>}
                     </div>
                     {event && (
                         <Link href={`/display/${event.event_code}`} target="_blank"
-                            className="text-sm px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+                            className="text-xs sm:text-sm px-2 sm:px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition whitespace-nowrap">
                             Display ↗
                         </Link>
                     )}
-                    <button onClick={logout} className="text-slate-400 hover:text-white text-sm transition px-3 py-1.5 rounded-lg hover:bg-slate-800">Sign Out</button>
+                    <button onClick={logout} className="hidden sm:block text-slate-400 hover:text-white text-sm transition px-3 py-1.5 rounded-lg hover:bg-slate-800">Sign Out</button>
                 </div>
             </header>
 
-            <main className="max-w-7xl mx-auto px-4 py-6">
+            <main className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
                 {/* Tabs + search */}
-                <div className="flex flex-col sm:flex-row gap-3 mb-6">
-                    <div className="flex gap-1 bg-slate-900 border border-slate-800 rounded-xl p-1">
-                        {(['PENDING', 'APPROVED', 'REJECTED', 'ANSWERED'] as Tab[]).map(t => (
-                            <button key={t} onClick={() => setTab(t)}
-                                className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-medium transition ${tab === t ? 'bg-violet-600 text-white' : 'text-slate-400 hover:text-white'}`}>
-                                {t.charAt(0) + t.slice(1).toLowerCase()}
-                                <span className={`text-xs px-1.5 py-0.5 rounded-full ${tab === t ? 'bg-white/20' : 'bg-slate-800'}`}>{counts[t]}</span>
-                            </button>
-                        ))}
+                <div className="flex flex-col gap-3 mb-4 sm:mb-6">
+                    <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0">
+                        <div className="flex gap-1 bg-slate-900 border border-slate-800 rounded-xl p-1 min-w-max">
+                            {(['PENDING', 'APPROVED', 'REJECTED', 'ANSWERED'] as Tab[]).map(t => (
+                                <button key={t} onClick={() => setTab(t)}
+                                    className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition whitespace-nowrap ${tab === t ? 'bg-violet-600 text-white' : 'text-slate-400 hover:text-white'}`}>
+                                    {t.charAt(0) + t.slice(1).toLowerCase()}
+                                    <span className={`text-xs px-1.5 py-0.5 rounded-full ${tab === t ? 'bg-white/20' : 'bg-slate-800'}`}>{counts[t]}</span>
+                                </button>
+                            ))}
+                        </div>
                     </div>
                     <input
                         value={search}
                         onChange={e => setSearch(e.target.value)}
                         placeholder="Search questions…"
-                        className="flex-1 px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500 transition text-sm"
+                        className="w-full px-4 py-2.5 sm:py-2 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500 transition text-sm"
                     />
                 </div>
 
@@ -148,12 +150,12 @@ export default function EventModerationPage({ params }: { params: { id: string }
                         No {tab.toLowerCase()} questions{search ? ' matching your search' : ''}.
                     </div>
                 ) : (
-                    <div className="space-y-3">
+                    <div className="space-y-2 sm:space-y-3">
                         {filtered.map(q => (
-                            <div key={q.id} className="bg-slate-900 border border-slate-800 rounded-xl p-4 hover:border-slate-700 transition group">
-                                <div className="flex items-start gap-4">
+                            <div key={q.id} className="bg-slate-900 border border-slate-800 rounded-xl p-3 sm:p-4 hover:border-slate-700 transition group">
+                                <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-white text-sm leading-relaxed">{q.content}</p>
+                                        <p className="text-white text-sm sm:text-base leading-relaxed">{q.content}</p>
                                         <div className="flex items-center gap-3 mt-2">
                                             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[q.status]}`}>{q.status}</span>
                                             <span className="text-xs text-slate-600">{new Date(q.created_at).toLocaleTimeString()}</span>
@@ -161,15 +163,15 @@ export default function EventModerationPage({ params }: { params: { id: string }
                                     </div>
 
                                     {/* Actions */}
-                                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                                    <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 flex-wrap">
                                         {q.status === 'PENDING' && (
                                             <>
                                                 <button onClick={() => action('approve', q.id)} disabled={!!actionLoading}
-                                                    className="px-3 py-1.5 text-xs rounded-lg bg-green-500/15 hover:bg-green-500/25 text-green-400 font-medium transition disabled:opacity-50">
+                                                    className="px-3 sm:px-4 py-2 sm:py-1.5 text-xs sm:text-sm rounded-lg bg-green-500/15 hover:bg-green-500/25 text-green-400 font-medium transition disabled:opacity-50 min-h-[44px] sm:min-h-0">
                                                     {actionLoading === q.id + 'approve' ? '…' : 'Approve'}
                                                 </button>
                                                 <button onClick={() => action('reject', q.id)} disabled={!!actionLoading}
-                                                    className="px-3 py-1.5 text-xs rounded-lg bg-red-500/15 hover:bg-red-500/25 text-red-400 font-medium transition disabled:opacity-50">
+                                                    className="px-3 sm:px-4 py-2 sm:py-1.5 text-xs sm:text-sm rounded-lg bg-red-500/15 hover:bg-red-500/25 text-red-400 font-medium transition disabled:opacity-50 min-h-[44px] sm:min-h-0">
                                                     {actionLoading === q.id + 'reject' ? '…' : 'Reject'}
                                                 </button>
                                             </>
@@ -177,32 +179,32 @@ export default function EventModerationPage({ params }: { params: { id: string }
                                         {q.status === 'APPROVED' && (
                                             <>
                                                 <button onClick={() => action('mark-answered', q.id)} disabled={!!actionLoading}
-                                                    className="px-3 py-1.5 text-xs rounded-lg bg-blue-500/15 hover:bg-blue-500/25 text-blue-400 font-medium transition disabled:opacity-50">
+                                                    className="px-3 sm:px-4 py-2 sm:py-1.5 text-xs sm:text-sm rounded-lg bg-blue-500/15 hover:bg-blue-500/25 text-blue-400 font-medium transition disabled:opacity-50 min-h-[44px] sm:min-h-0">
                                                     {actionLoading === q.id + 'mark-answered' ? '…' : 'Answered'}
                                                 </button>
                                                 <button onClick={() => action('reject', q.id)} disabled={!!actionLoading}
-                                                    className="px-3 py-1.5 text-xs rounded-lg bg-red-500/15 hover:bg-red-500/25 text-red-400 font-medium transition disabled:opacity-50">
+                                                    className="px-3 sm:px-4 py-2 sm:py-1.5 text-xs sm:text-sm rounded-lg bg-red-500/15 hover:bg-red-500/25 text-red-400 font-medium transition disabled:opacity-50 min-h-[44px] sm:min-h-0">
                                                     {actionLoading === q.id + 'reject' ? '…' : 'Reject'}
                                                 </button>
                                             </>
                                         )}
                                         {q.status === 'REJECTED' && (
                                             <button onClick={() => action('approve', q.id)} disabled={!!actionLoading}
-                                                className="px-3 py-1.5 text-xs rounded-lg bg-green-500/15 hover:bg-green-500/25 text-green-400 font-medium transition disabled:opacity-50">
+                                                className="px-3 sm:px-4 py-2 sm:py-1.5 text-xs sm:text-sm rounded-lg bg-green-500/15 hover:bg-green-500/25 text-green-400 font-medium transition disabled:opacity-50 min-h-[44px] sm:min-h-0">
                                                 {actionLoading === q.id + 'approve' ? '…' : 'Re-approve'}
                                             </button>
                                         )}
                                         {q.status !== 'ANSWERED' && (
                                             <button onClick={() => del(q.id)} disabled={!!actionLoading}
-                                                className="p-1.5 rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-500/10 transition disabled:opacity-50">
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                className="p-2 sm:p-1.5 rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-500/10 transition disabled:opacity-50 min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0">
+                                                <svg className="w-5 h-5 sm:w-4 sm:h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                 </svg>
                                             </button>
                                         )}
                                         {q.status === 'ANSWERED' && (
                                             <button onClick={() => del(q.id)} disabled={!!actionLoading}
-                                                className="px-3 py-1.5 text-xs rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-500/10 transition disabled:opacity-50">
+                                                className="px-3 sm:px-4 py-2 sm:py-1.5 text-xs sm:text-sm rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-500/10 transition disabled:opacity-50 min-h-[44px] sm:min-h-0">
                                                 {actionLoading === q.id + 'delete' ? '…' : 'Delete'}
                                             </button>
                                         )}

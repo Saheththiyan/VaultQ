@@ -126,41 +126,41 @@ export default function AdminDashboard() {
         <div className="min-h-screen bg-slate-950 text-white">
             {/* Header */}
             <header className="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-10">
-                <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <img src="/logo.png" alt="VaultQ" className="w-8 h-8 object-contain" />
-                        <span className="font-semibold text-lg">VaultQ Admin</span>
+                <div className="max-w-6xl mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                        <img src="/logo.png" alt="VaultQ" className="w-6 h-6 sm:w-8 sm:h-8 object-contain" />
+                        <span className="font-semibold text-base sm:text-lg">VaultQ Admin</span>
                     </div>
-                    <button onClick={logout} className="text-slate-400 hover:text-white text-sm transition px-3 py-1.5 rounded-lg hover:bg-slate-800">
+                    <button onClick={logout} className="text-slate-400 hover:text-white text-xs sm:text-sm transition px-2 sm:px-3 py-1.5 rounded-lg hover:bg-slate-800">
                         Sign out
                     </button>
                 </div>
             </header>
 
-            <main className="max-w-6xl mx-auto px-4 py-8">
+            <main className="max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
                 {/* Create event */}
-                <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 mb-8">
-                    <h2 className="text-lg font-semibold mb-4">Create New Event</h2>
-                    <form onSubmit={createEvent} className="flex gap-3">
+                <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8">
+                    <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Create New Event</h2>
+                    <form onSubmit={createEvent} className="flex flex-col sm:flex-row gap-3">
                         <input
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                             placeholder="Event title (e.g. Annual Conf 2025)"
-                            className="flex-1 px-4 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500 transition"
+                            className="flex-1 px-3 sm:px-4 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500 transition text-sm sm:text-base"
                         />
                         <button
                             type="submit"
                             disabled={creating || !title.trim()}
-                            className="px-6 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-all"
+                            className="px-6 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-all text-sm sm:text-base whitespace-nowrap"
                         >
                             {creating ? 'Creating…' : 'Create'}
                         </button>
                     </form>
-                    {error && <p className="text-red-400 text-sm mt-2">{error}</p>}
+                    {error && <p className="text-red-400 text-xs sm:text-sm mt-2">{error}</p>}
                 </div>
 
                 {/* Event list */}
-                <h2 className="text-lg font-semibold mb-4">Your Events</h2>
+                <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Your Events</h2>
                 {loading ? (
                     <div className="text-center py-20 text-slate-500">Loading events…</div>
                 ) : events.length === 0 ? (
