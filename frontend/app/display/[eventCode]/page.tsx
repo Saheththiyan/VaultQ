@@ -90,7 +90,7 @@ export default function DisplayPage({ params }: { params: { eventCode: string } 
                                 <div className="bg-white p-4 rounded-xl mb-4">
                                     <QRCodeSVG value={`${origin}/e/${eventCode}`} size={280} />
                                 </div>
-                                <p className="text-slate-400 text-sm text-center mb-2">Scan to submit</p>
+                                <p className="text-slate-400 text-sm text-center mb-2">Scan to submit your question</p>
                                 <p className="text-slate-600 text-xs font-mono text-center">{eventCode}</p>
                             </div>
                         </div>

@@ -21,10 +21,16 @@ export default function ParticipantPage({ params }: { params: { eventCode: strin
     const [submitting, setSubmitting] = useState(false);
     const [serverError, setServerError] = useState('');
 
-    const { register, handleSubmit, watch, formState: { errors } } = useForm<FormData>({
+    const { register, handleSubmit, watch, reset, formState: { errors } } = useForm<FormData>({
         resolver: zodResolver(schema),
     });
     const content = watch('content', '');
+
+    const submitAnother = () => {
+        reset();
+        setServerError('');
+        setPageState('form');
+    };
 
     useEffect(() => {
         api.get<Event>(`/api/events/${eventCode}`)
@@ -87,6 +93,12 @@ export default function ParticipantPage({ params }: { params: { eventCode: strin
                         Your question has been received. The moderator will review it shortly.
                     </p>
                     <p className="text-slate-500 text-sm mt-4">Thank you for participating in <span className="text-violet-400">{event?.title}</span></p>
+                    <button
+                        onClick={submitAnother}
+                        className="mt-6 px-6 py-3 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-medium transition-all shadow-lg shadow-violet-500/20"
+                    >
+                        Submit Another Question
+                    </button>
                 </div>
             </div>
         );
