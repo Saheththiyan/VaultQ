@@ -67,35 +67,43 @@ describe('QuestionService - Submission', () => {
 // ─── Approval Workflow ────────────────────────────────────────────────────────
 describe('QuestionService - Approval', () => {
     const svc = new QuestionService();
+    const adminId = 'admin-123';
     beforeEach(() => jest.clearAllMocks());
 
     it('sets status to APPROVED', async () => {
-        const q = { id: 'q1', status: QuestionStatus.PENDING, is_visible: false, event_id: 'e1', event: { event_code: 'ABC' } };
+        const q = { id: 'q1', status: QuestionStatus.PENDING, is_visible: false, event_id: 'e1', event: { event_code: 'ABC', admin_id: adminId } };
         (QuestionRepository.findOne as jest.Mock).mockResolvedValue(q);
         (QuestionRepository.save as jest.Mock).mockImplementation((q) => Promise.resolve({ ...q, status: QuestionStatus.APPROVED }));
-        const result = await svc.approveQuestion('q1');
+        const result = await svc.approveQuestion('q1', adminId);
         expect(result.status).toBe(QuestionStatus.APPROVED);
     });
 
     it('sets status to REJECTED', async () => {
-        const q = { id: 'q1', status: QuestionStatus.PENDING, is_visible: false, event_id: 'e1', event: { event_code: 'ABC' } };
+        const q = { id: 'q1', status: QuestionStatus.PENDING, is_visible: false, event_id: 'e1', event: { event_code: 'ABC', admin_id: adminId } };
         (QuestionRepository.findOne as jest.Mock).mockResolvedValue(q);
         (QuestionRepository.save as jest.Mock).mockImplementation((q) => Promise.resolve({ ...q, status: QuestionStatus.REJECTED }));
-        const result = await svc.rejectQuestion('q1');
+        const result = await svc.rejectQuestion('q1', adminId);
         expect(result.status).toBe(QuestionStatus.REJECTED);
     });
 
-    it('toggles visibility on approved question', async () => {
-        const q = { id: 'q1', status: QuestionStatus.APPROVED, is_visible: false, event_id: 'e1', event: { event_code: 'ABC' } };
+    it('marks question as answered', async () => {
+        const q = { id: 'q1', status: QuestionStatus.APPROVED, is_visible: true, event_id: 'e1', event: { event_code: 'ABC', admin_id: adminId } };
         (QuestionRepository.findOne as jest.Mock).mockResolvedValue(q);
-        (QuestionRepository.save as jest.Mock).mockImplementation((q) => Promise.resolve(q));
-        const result = await svc.toggleVisibility('q1');
-        expect(result.is_visible).toBe(true);
+        (QuestionRepository.save as jest.Mock).mockImplementation((q) => Promise.resolve({ ...q, status: QuestionStatus.ANSWERED, is_visible: false }));
+        const result = await svc.markAnswered('q1', adminId);
+        expect(result.status).toBe(QuestionStatus.ANSWERED);
+        expect(result.is_visible).toBe(false);
     });
 
-    it('throws toggle on non-approved question', async () => {
-        const q = { id: 'q1', status: QuestionStatus.PENDING, is_visible: false, event_id: 'e1', event: { event_code: 'ABC' } };
+    it('throws when marking non-approved question as answered', async () => {
+        const q = { id: 'q1', status: QuestionStatus.PENDING, is_visible: false, event_id: 'e1', event: { event_code: 'ABC', admin_id: adminId } };
         (QuestionRepository.findOne as jest.Mock).mockResolvedValue(q);
-        await expect(svc.toggleVisibility('q1')).rejects.toThrow('Only approved questions can be toggled');
+        await expect(svc.markAnswered('q1', adminId)).rejects.toThrow('Only approved questions can be marked as answered');
+    });
+
+    it('throws when admin does not own the event', async () => {
+        const q = { id: 'q1', status: QuestionStatus.PENDING, is_visible: false, event_id: 'e1', event: { event_code: 'ABC', admin_id: 'different-admin' } };
+        (QuestionRepository.findOne as jest.Mock).mockResolvedValue(q);
+        await expect(svc.approveQuestion('q1', adminId)).rejects.toThrow('Unauthorized');
     });
 });
