@@ -4,7 +4,7 @@ import { QuestionStatus } from '../entities/Question';
 
 const handleErr = (res: Response, err: unknown, fallbackStatus = 500): void => {
     const msg = err instanceof Error ? err.message : 'Internal server error';
-    const status = msg.includes('not found') ? 404 : msg.includes('Only approved') ? 400 : fallbackStatus;
+    const status = msg.includes('not found') ? 404 : msg.includes('Only approved') ? 400 : msg.includes('Unauthorized') ? 403 : fallbackStatus;
     res.status(status).json({ error: msg });
 };
 
@@ -20,30 +20,44 @@ export const getDisplayQuestions = async (req: Request, res: Response): Promise<
     catch (err) { handleErr(res, err); }
 };
 
-export const getAdminQuestions = async (req: Request, res: Response): Promise<void> => {
+export const getAdminQuestions = async (req: Request & { adminId?: string }, res: Response): Promise<void> => {
     try {
+        if (!req.adminId) { res.status(401).json({ error: 'Unauthorized' }); return; }
         const status = Object.values(QuestionStatus).includes(req.query.status as QuestionStatus)
             ? (req.query.status as QuestionStatus) : undefined;
-        res.json(await questionService.getQuestionsByEvent(req.params.id, status));
-    } catch { res.status(500).json({ error: 'Internal server error' }); }
+        res.json(await questionService.getQuestionsByEvent(req.params.id, req.adminId, status));
+    } catch (err) { handleErr(res, err); }
 };
 
-export const approveQuestion = async (req: Request, res: Response): Promise<void> => {
-    try { res.json(await questionService.approveQuestion(req.params.id)); }
+export const approveQuestion = async (req: Request & { adminId?: string }, res: Response): Promise<void> => {
+    try { 
+        if (!req.adminId) { res.status(401).json({ error: 'Unauthorized' }); return; }
+        res.json(await questionService.approveQuestion(req.params.id, req.adminId)); 
+    }
     catch (err) { handleErr(res, err); }
 };
 
-export const rejectQuestion = async (req: Request, res: Response): Promise<void> => {
-    try { res.json(await questionService.rejectQuestion(req.params.id)); }
+export const rejectQuestion = async (req: Request & { adminId?: string }, res: Response): Promise<void> => {
+    try { 
+        if (!req.adminId) { res.status(401).json({ error: 'Unauthorized' }); return; }
+        res.json(await questionService.rejectQuestion(req.params.id, req.adminId)); 
+    }
     catch (err) { handleErr(res, err); }
 };
 
-export const markAnswered = async (req: Request, res: Response): Promise<void> => {
-    try { res.json(await questionService.markAnswered(req.params.id)); }
+export const markAnswered = async (req: Request & { adminId?: string }, res: Response): Promise<void> => {
+    try { 
+        if (!req.adminId) { res.status(401).json({ error: 'Unauthorized' }); return; }
+        res.json(await questionService.markAnswered(req.params.id, req.adminId)); 
+    }
     catch (err) { handleErr(res, err); }
 };
 
-export const deleteQuestion = async (req: Request, res: Response): Promise<void> => {
-    try { await questionService.deleteQuestion(req.params.id); res.json({ message: 'Question deleted' }); }
+export const deleteQuestion = async (req: Request & { adminId?: string }, res: Response): Promise<void> => {
+    try { 
+        if (!req.adminId) { res.status(401).json({ error: 'Unauthorized' }); return; }
+        await questionService.deleteQuestion(req.params.id, req.adminId); 
+        res.json({ message: 'Question deleted' }); 
+    }
     catch (err) { handleErr(res, err); }
 };

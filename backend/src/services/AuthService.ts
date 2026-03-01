@@ -11,6 +11,19 @@ export class AuthService {
         return jwt.sign({ adminId: admin.id }, process.env.JWT_SECRET || 'changeme', { expiresIn: '8h' });
     }
 
+    async signup(email: string, password: string): Promise<string> {
+        // Check if email already exists
+        const existingAdmin = await AdminRepository.findOne({ where: { email } });
+        if (existingAdmin) throw new Error('Email already exists');
+        
+        // Create new admin
+        const hash = await bcrypt.hash(password, 12);
+        const admin = await AdminRepository.save(AdminRepository.create({ email, password_hash: hash }));
+        
+        // Return JWT token
+        return jwt.sign({ adminId: admin.id }, process.env.JWT_SECRET || 'changeme', { expiresIn: '8h' });
+    }
+
     async createAdmin(email: string, password: string): Promise<void> {
         const hash = await bcrypt.hash(password, 12);
         await AdminRepository.save(AdminRepository.create({ email, password_hash: hash }));

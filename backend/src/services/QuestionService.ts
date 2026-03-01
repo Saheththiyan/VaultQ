@@ -12,7 +12,10 @@ export class QuestionService {
         return saved;
     }
 
-    async getQuestionsByEvent(eventId: string, status?: QuestionStatus): Promise<Question[]> {
+    async getQuestionsByEvent(eventId: string, adminId: string, status?: QuestionStatus): Promise<Question[]> {
+        // Verify admin owns this event
+        const event = await EventRepository.findOne({ where: { id: eventId, admin_id: adminId } });
+        if (!event) throw new Error('Event not found');
         const where: Record<string, unknown> = { event_id: eventId };
         if (status) where.status = status;
         return QuestionRepository.find({ where, order: { created_at: 'DESC' } });
@@ -27,9 +30,11 @@ export class QuestionService {
         });
     }
 
-    async approveQuestion(id: string): Promise<Question> {
+    async approveQuestion(id: string, adminId: string): Promise<Question> {
         const q = await QuestionRepository.findOne({ where: { id }, relations: ['event'] });
         if (!q) throw new Error('Question not found');
+        // Verify admin owns this event
+        if (q.event.admin_id !== adminId) throw new Error('Unauthorized');
         q.status = QuestionStatus.APPROVED;
         q.is_visible = true;
         const saved = await QuestionRepository.save(q);
@@ -38,9 +43,11 @@ export class QuestionService {
         return saved;
     }
 
-    async rejectQuestion(id: string): Promise<Question> {
+    async rejectQuestion(id: string, adminId: string): Promise<Question> {
         const q = await QuestionRepository.findOne({ where: { id }, relations: ['event'] });
         if (!q) throw new Error('Question not found');
+        // Verify admin owns this event
+        if (q.event.admin_id !== adminId) throw new Error('Unauthorized');
         const wasVisible = q.is_visible;
         q.status = QuestionStatus.REJECTED;
         q.is_visible = false;
@@ -50,9 +57,11 @@ export class QuestionService {
         return saved;
     }
 
-    async markAnswered(id: string): Promise<Question> {
+    async markAnswered(id: string, adminId: string): Promise<Question> {
         const q = await QuestionRepository.findOne({ where: { id }, relations: ['event'] });
         if (!q) throw new Error('Question not found');
+        // Verify admin owns this event
+        if (q.event.admin_id !== adminId) throw new Error('Unauthorized');
         if (q.status !== QuestionStatus.APPROVED) throw new Error('Only approved questions can be marked as answered');
         q.status = QuestionStatus.ANSWERED;
         q.is_visible = false;
@@ -62,9 +71,11 @@ export class QuestionService {
         return saved;
     }
 
-    async deleteQuestion(id: string): Promise<void> {
+    async deleteQuestion(id: string, adminId: string): Promise<void> {
         const q = await QuestionRepository.findOne({ where: { id }, relations: ['event'] });
         if (!q) throw new Error('Question not found');
+        // Verify admin owns this event
+        if (q.event.admin_id !== adminId) throw new Error('Unauthorized');
         if (q.status === QuestionStatus.APPROVED && q.is_visible) {
             socketService.emitToDisplayRoom(q.event.event_code, 'question:removed', { id });
         }

@@ -7,26 +7,26 @@ function generateCode(len = 6): string {
 }
 
 export class EventService {
-    async createEvent(title: string): Promise<Event> {
+    async createEvent(title: string, adminId: string): Promise<Event> {
         let code: string;
         do { code = generateCode(); } while (await EventRepository.findOne({ where: { event_code: code } }));
-        return EventRepository.save(EventRepository.create({ title, event_code: code }));
+        return EventRepository.save(EventRepository.create({ title, event_code: code, admin_id: adminId }));
     }
 
-    async getAllEvents(): Promise<Event[]> {
-        return EventRepository.find({ order: { created_at: 'DESC' } });
+    async getAllEvents(adminId: string): Promise<Event[]> {
+        return EventRepository.find({ where: { admin_id: adminId }, order: { created_at: 'DESC' } });
     }
 
-    async getEventById(id: string): Promise<Event | null> {
-        return EventRepository.findOne({ where: { id } });
+    async getEventById(id: string, adminId: string): Promise<Event | null> {
+        return EventRepository.findOne({ where: { id, admin_id: adminId } });
     }
 
     async getEventByCode(eventCode: string): Promise<Event | null> {
         return EventRepository.findOne({ where: { event_code: eventCode } });
     }
 
-    async deleteEvent(id: string): Promise<void> {
-        await EventRepository.delete(id);
+    async deleteEvent(id: string, adminId: string): Promise<void> {
+        await EventRepository.delete({ id, admin_id: adminId });
     }
 }
 
