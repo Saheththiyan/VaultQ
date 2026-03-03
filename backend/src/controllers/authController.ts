@@ -5,7 +5,7 @@ export const adminSignup = async (req: Request, res: Response): Promise<void> =>
     try {
         const token = await authService.signup(req.body.email, req.body.password);
         const isProd = process.env.NODE_ENV === 'production';
-        res.cookie('admin_token', token, { httpOnly: true, secure: isProd, sameSite: 'lax', maxAge: 8 * 3600 * 1000 });
+        res.cookie('admin_token', token, { httpOnly: true, secure: isProd, sameSite: 'none', maxAge: 8 * 3600 * 1000 });
         res.status(201).json({ message: 'Signup successful', token });
     } catch (error) {
         const message = error instanceof Error ? error.message : 'Signup failed';
@@ -18,9 +18,11 @@ export const adminLogin = async (req: Request, res: Response): Promise<void> => 
     try {
         const token = await authService.login(req.body.email, req.body.password);
         const isProd = process.env.NODE_ENV === 'production';
-        res.cookie('admin_token', token, { httpOnly: true, secure: isProd, sameSite: 'lax', maxAge: 8 * 3600 * 1000 });
+        res.cookie('admin_token', token, { httpOnly: true, secure: isProd, sameSite: 'none', maxAge: 8 * 3600 * 1000 });
         res.json({ message: 'Login successful', token });
-    } catch { res.status(401).json({ error: 'Invalid credentials' }); }
+    } catch (error) {
+        res.status(401).json({ error: 'Invalid credentials' });
+    }
 };
 
 export const adminLogout = (_req: Request, res: Response): void => {
