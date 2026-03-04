@@ -100,8 +100,16 @@ export default function DisplayPage({ params }: { params: { eventCode: string } 
                                     className="animate-fade-in"
                                     style={{ animationDelay: `${i * 0.05}s` }}
                                 >
-                                    <div className="bg-slate-900/60 border border-slate-700/50 rounded-2xl px-4 sm:px-6 md:px-8 py-4 sm:py-6 backdrop-blur">
-                                        <p className="text-white text-lg sm:text-xl md:text-2xl lg:text-3xl font-light leading-relaxed">
+                                    <div className={`rounded-2xl px-4 sm:px-6 md:px-8 py-4 sm:py-6 ${
+                                        i === 0 
+                                            ? 'bg-white border-2 border-slate-300 shadow-xl' 
+                                            : 'bg-slate-900/60 border border-slate-700/50 backdrop-blur'
+                                    }`}>
+                                        <p className={`text-lg sm:text-xl md:text-2xl lg:text-3xl leading-relaxed ${
+                                            i === 0 
+                                                ? 'text-slate-900 font-bold' 
+                                                : 'text-white font-light'
+                                        }`}>
                                             {q.content}
                                         </p>
                                     </div>
