@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'Admin Login',
+    title: 'Login',
     description: 'Login to VaultQ admin dashboard to manage your events and Q&A sessions',
     robots: {
         index: false, // Don't index admin pages
