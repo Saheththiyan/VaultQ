@@ -79,10 +79,32 @@ export const metadata: Metadata = {
     },
 };
 
+const websiteSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'VaultQ',
+    description: 'Private moderated live Q&A platform for events, webinars, and conferences.',
+    url: process.env.NEXT_PUBLIC_BASE_URL || 'https://vaultq.cse23.org',
+    potentialAction: {
+        '@type': 'SearchAction',
+        target: {
+            '@type': 'EntryPoint',
+            urlTemplate: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://vaultq.cse23.org'}/e/{event_code}`,
+        },
+        'query-input': 'required name=event_code',
+    },
+};
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
         <html lang="en">
-            <body className={inter.className}>{children}</body>
+            <body className={inter.className}>
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+                />
+                {children}
+            </body>
         </html>
     );
 }

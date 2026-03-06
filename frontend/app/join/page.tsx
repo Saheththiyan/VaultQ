@@ -3,6 +3,7 @@
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Breadcrumb from '@/components/shared/Breadcrumb';
 
 export default function JoinPage() {
     const router = useRouter();
@@ -26,16 +27,14 @@ export default function JoinPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-violet-950 via-slate-900 to-slate-950 flex flex-col items-center justify-center p-4">
 
-            {/* back link */}
-            <Link
-                href="/"
-                className="absolute top-6 left-6 flex items-center gap-1.5 text-slate-400 hover:text-white text-sm transition-colors"
-            >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-                Home
-            </Link>
+            {/* breadcrumb */}
+            <Breadcrumb
+                className="absolute top-6 left-6"
+                items={[
+                    { label: 'Home', href: '/' },
+                    { label: 'Join an Event' },
+                ]}
+            />
 
             <div className="w-full max-w-md animate-fade-in">
 
