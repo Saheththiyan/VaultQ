@@ -34,8 +34,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
                     description: `Join the Q&A session for ${event.title}`,
                 },
                 robots: {
-                    index: true,
-                    follow: true,
+                    index: false,
+                    follow: false,
                 },
             };
         }
@@ -52,6 +52,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             title: `Event ${eventCode}`,
             description: 'Live Q&A session - Submit questions and vote',
             type: 'website',
+        },
+        robots: {
+            index: false,
+            follow: false,
         },
     };
 }
