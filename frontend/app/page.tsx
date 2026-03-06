@@ -1,69 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useRef } from 'react';
-
-/* ── tiny animated orb canvas ─────────────────────────────────────────── */
-function OrbCanvas() {
-    const ref = useRef<HTMLCanvasElement>(null);
-
-    useEffect(() => {
-        const canvas = ref.current;
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d')!;
-        let raf: number;
-
-        const resize = () => {
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
-        };
-        resize();
-        window.addEventListener('resize', resize);
-
-        const orbs = Array.from({ length: 6 }, (_, i) => ({
-            x: Math.random() * canvas.width,
-            y: Math.random() * canvas.height,
-            r: 120 + Math.random() * 180,
-            dx: (Math.random() - 0.5) * 0.35,
-            dy: (Math.random() - 0.5) * 0.35,
-            hue: i % 2 === 0 ? 263 : 220,
-        }));
-
-        const draw = () => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            orbs.forEach(o => {
-                const grd = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, o.r);
-                grd.addColorStop(0, `hsla(${o.hue}, 70%, 55%, 0.18)`);
-                grd.addColorStop(1, 'transparent');
-                ctx.beginPath();
-                ctx.arc(o.x, o.y, o.r, 0, Math.PI * 2);
-                ctx.fillStyle = grd;
-                ctx.fill();
-                o.x += o.dx;
-                o.y += o.dy;
-                if (o.x < -o.r) o.x = canvas.width + o.r;
-                if (o.x > canvas.width + o.r) o.x = -o.r;
-                if (o.y < -o.r) o.y = canvas.height + o.r;
-                if (o.y > canvas.height + o.r) o.y = -o.r;
-            });
-            raf = requestAnimationFrame(draw);
-        };
-        draw();
-
-        return () => {
-            cancelAnimationFrame(raf);
-            window.removeEventListener('resize', resize);
-        };
-    }, []);
-
-    return (
-        <canvas
-            ref={ref}
-            className="absolute inset-0 w-full h-full pointer-events-none"
-            aria-hidden
-        />
-    );
-}
 
 /* ── feature card ──────────────────────────────────────────────────────── */
 function FeatureCard({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
@@ -99,7 +36,10 @@ export default function HomePage() {
 
             {/* ── hero ── */}
             <section className="relative flex flex-col items-center justify-center text-center px-6 pt-16 pb-24 sm:pt-24 sm:pb-32 max-w-4xl mx-auto">
-                <OrbCanvas />
+                {/* static glow orbs */}
+                <div className="absolute -top-24 -left-24 w-[28rem] h-[28rem] rounded-full bg-violet-500/10 blur-3xl pointer-events-none" />
+                <div className="absolute -bottom-24 -right-24 w-96 h-96 rounded-full bg-fuchsia-500/10 blur-3xl pointer-events-none" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-violet-600/10 blur-3xl pointer-events-none" />
 
                 <div className="relative z-10 animate-fade-in">
                     {/* pill badge */}
@@ -116,7 +56,7 @@ export default function HomePage() {
                     </h1>
 
                     <p className="text-slate-400 text-base sm:text-lg max-w-xl mx-auto leading-relaxed mb-10">
-                        Let your audience ask questions anonymously. You review and surface the best ones — no noise, no chaos.
+                        Let your audience ask questions anonymously. You review and surface the best ones. No noise, No chaos.
                     </p>
 
                     {/* primary CTA */}
@@ -154,7 +94,7 @@ export default function HomePage() {
                             </svg>
                         }
                         title="Fully Anonymous"
-                        desc="Participants ask freely without revealing who they are — honest questions, real conversations."
+                        desc="Participants ask freely without revealing who they are. Honest questions, real conversations."
                     />
                     <FeatureCard
                         icon={
@@ -194,7 +134,7 @@ export default function HomePage() {
                     </div>
 
                     <Link
-                        href="/admin/login"
+                        href="/admin/signup"
                         className="relative z-10 shrink-0 inline-flex items-center gap-2.5 px-7 py-3.5 rounded-2xl bg-violet-600 hover:bg-violet-500 text-white font-semibold shadow-xl shadow-violet-500/25 hover:shadow-violet-500/40 transition-all duration-200 hover:-translate-y-0.5 whitespace-nowrap"
                     >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
