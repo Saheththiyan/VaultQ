@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import api from '@/lib/api';
+import Breadcrumb from '@/components/shared/Breadcrumb';
 
 const schema = z.object({
     email: z.string().email('Invalid email'),
@@ -38,7 +39,14 @@ export default function AdminLoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-950 via-slate-900 to-slate-950">
+        <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-950 via-slate-900 to-slate-950">
+            <Breadcrumb
+                className="absolute top-6 left-6"
+                items={[
+                    { label: 'Home', href: '/' },
+                    { label: 'Sign In' },
+                ]}
+            />
             <div className="w-full max-w-md px-4">
                 {/* Logo / Header */}
                 <div className="text-center mb-8">

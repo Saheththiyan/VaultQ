@@ -71,13 +71,24 @@ export default function DisplayPage({ params }: { params: { eventCode: string } 
                 {loading ? (
                     <div className="text-slate-600 text-base sm:text-lg">Loading…</div>
                 ) : questions.length === 0 ? (
-                    <div className="text-center max-w-md">
-                        <div className="inline-block bg-white p-4 sm:p-6 rounded-2xl mb-6 sm:mb-8 shadow-2xl">
+                    <div className="text-center max-w-sm w-full">
+                        {/* QR code */}
+                        <div className="inline-block bg-white p-4 sm:p-6 rounded-2xl mb-8 shadow-2xl">
                             <QRCodeSVG value={`${origin}/e/${eventCode}`} size={window.innerWidth < 640 ? 180 : 240} />
                         </div>
-                        <p className="text-slate-400 text-xl sm:text-2xl md:text-3xl font-light mb-3">Scan to submit your questions</p>
-                        <p className="text-slate-600 text-base sm:text-lg font-mono">{eventCode}</p>
-                        <p className="text-slate-700 text-xs sm:text-sm mt-4 px-4">or visit <span className="font-mono text-slate-600 break-all">{origin}/e/{eventCode}</span></p>
+
+                        <p className="text-white text-xl sm:text-2xl font-bold mb-4">
+                            Scan and submit your question
+                        </p>
+
+                        <p className="text-slate-400 text-base sm:text-lg font-semibold">
+                            or enter{' '}
+                            <span className="text-violet-400 font-bold font-mono">{eventCode}</span>
+                            {' '}at{' '}
+                            <span className="text-violet-400 font-bold font-mono">
+                                {typeof window !== 'undefined' ? window.location.host : ''}
+                            </span>
+                        </p>
                     </div>
                 ) : (
                     <div className="w-full max-w-7xl flex flex-col md:flex-row gap-4 sm:gap-6 md:gap-8 items-start">
@@ -87,8 +98,15 @@ export default function DisplayPage({ params }: { params: { eventCode: string } 
                                 <div className="bg-white p-3 sm:p-4 rounded-xl mb-3 sm:mb-4 mx-auto" style={{width: 'fit-content'}}>
                                     <QRCodeSVG value={`${origin}/e/${eventCode}`} size={window.innerWidth < 640 ? 160 : 280} />
                                 </div>
-                                <p className="text-slate-400 text-xs sm:text-sm text-center mb-2">Scan to submit your question</p>
-                                <p className="text-slate-600 text-xs font-mono text-center">{eventCode}</p>
+                                <p className="text-white text-3xl font-bold text-center my-4">Scan to submit</p>
+                                <p className="text-slate-400 text-lg text-center">
+                                    or{' '}
+                                    <span className="text-violet-400 font-bold font-mono">{eventCode}</span>
+                                    {' '}at{' '}
+                                    <span className="text-violet-400 font-bold font-mono break-all">
+                                        {typeof window !== 'undefined' ? window.location.host : ''}
+                                    </span>
+                                </p>
                             </div>
                         </div>
 
@@ -122,11 +140,16 @@ export default function DisplayPage({ params }: { params: { eventCode: string } 
 
             {/* Footer */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 px-3 sm:px-8 py-3 sm:py-4 border-t border-slate-800/50">
-                <p className="text-slate-700 text-xs sm:text-sm text-center">
-                    Submit your question at <span className="text-slate-500 font-mono break-all">/e/{eventCode}</span>
+                <p className="text-slate-300 text-xs sm:text-sm text-center font-semibold">
+                    Join at{' '}
+                    <span className="text-violet-400 font-bold font-mono">
+                        {typeof window !== 'undefined' ? window.location.host : ''}
+                    </span>
+                    {' '}·{' '}
+                    Code: <span className="text-white font-bold font-mono">{eventCode}</span>
                 </p>
-                <div className="hidden sm:block w-1 h-1 rounded-full bg-slate-700" />
-                <p className="text-slate-700 text-xs sm:text-sm">{questions.length} question{questions.length !== 1 ? 's' : ''} shown</p>
+                {/* <div className="hidden sm:block w-1 h-1 rounded-full bg-slate-700" /> */}
+                {/* <p className="text-slate-700 text-xs sm:text-sm">{questions.length} question{questions.length !== 1 ? 's' : ''} shown</p> */}
             </div>
         </div>
     );

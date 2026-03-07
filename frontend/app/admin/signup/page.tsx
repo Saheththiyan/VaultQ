@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { authApi } from '@/lib/api';
 import Link from 'next/link';
+import Breadcrumb from '@/components/shared/Breadcrumb';
 
 export default function AdminSignup() {
     const [email, setEmail] = useState('');
@@ -40,7 +41,14 @@ export default function AdminSignup() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-950 via-slate-900 to-slate-950">
+        <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-950 via-slate-900 to-slate-950">
+            <Breadcrumb
+                className="absolute top-6 left-6"
+                items={[
+                    { label: 'Home', href: '/' },
+                    { label: 'Sign Up' },
+                ]}
+            />
             <div className="w-full max-w-md px-4">
                 {/* Logo / Header */}
                 <div className="text-center mb-8">
