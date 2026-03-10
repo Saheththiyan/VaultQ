@@ -178,6 +178,14 @@ export default function EventModerationPage({ params }: { params: { id: string }
                                         )}
                                         {q.status === 'APPROVED' && (
                                             <>
+                                                <button onClick={() => action('pin', q.id)} disabled={!!actionLoading}
+                                                    className={`px-3 sm:px-4 py-2 sm:py-1.5 text-xs sm:text-sm rounded-lg font-medium transition disabled:opacity-50 min-h-[44px] sm:min-h-0 ${
+                                                        q.is_pinned
+                                                            ? 'bg-violet-500/25 text-violet-300 hover:bg-violet-500/15'
+                                                            : 'bg-slate-700/50 text-slate-400 hover:bg-violet-500/15 hover:text-violet-400'
+                                                    }`}>
+                                                    {actionLoading === q.id + 'pin' ? '…' : q.is_pinned ? '★ Pinned' : '☆ Pin'}
+                                                </button>
                                                 <button onClick={() => action('mark-answered', q.id)} disabled={!!actionLoading}
                                                     className="px-3 sm:px-4 py-2 sm:py-1.5 text-xs sm:text-sm rounded-lg bg-blue-500/15 hover:bg-blue-500/25 text-blue-400 font-medium transition disabled:opacity-50 min-h-[44px] sm:min-h-0">
                                                     {actionLoading === q.id + 'mark-answered' ? '…' : 'Answered'}

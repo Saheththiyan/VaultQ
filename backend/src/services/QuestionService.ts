@@ -26,7 +26,7 @@ export class QuestionService {
         if (!event) throw new Error('Event not found');
         return QuestionRepository.find({
             where: { event_id: event.id, status: QuestionStatus.APPROVED },
-            order: { created_at: 'ASC' },
+            order: { is_pinned: 'DESC', created_at: 'ASC' },
         });
     }
 
@@ -51,6 +51,7 @@ export class QuestionService {
         const wasVisible = q.is_visible;
         q.status = QuestionStatus.REJECTED;
         q.is_visible = false;
+        q.is_pinned = false;
         const saved = await QuestionRepository.save(q);
         if (wasVisible) socketService.emitToDisplayRoom(q.event.event_code, 'question:hidden', saved);
         socketService.emitToAdminRoom(q.event_id, 'question:updated', saved);
@@ -65,9 +66,37 @@ export class QuestionService {
         if (q.status !== QuestionStatus.APPROVED) throw new Error('Only approved questions can be marked as answered');
         q.status = QuestionStatus.ANSWERED;
         q.is_visible = false;
+        q.is_pinned = false;
         const saved = await QuestionRepository.save(q);
         socketService.emitToDisplayRoom(q.event.event_code, 'question:hidden', saved);
         socketService.emitToAdminRoom(q.event_id, 'question:updated', saved);
+        return saved;
+    }
+
+    async pinQuestion(id: string, adminId: string): Promise<Question> {
+        const q = await QuestionRepository.findOne({ where: { id }, relations: ['event'] });
+        if (!q) throw new Error('Question not found');
+        if (q.event.admin_id !== adminId) throw new Error('Unauthorized');
+        if (q.status !== QuestionStatus.APPROVED) throw new Error('Only approved questions can be pinned');
+
+        const newPinnedState = !q.is_pinned;
+
+        if (newPinnedState) {
+            // Unpin any currently pinned questions for this event
+            const alreadyPinned = await QuestionRepository.find({ where: { event_id: q.event_id, is_pinned: true } });
+            for (const other of alreadyPinned) {
+                if (other.id !== id) {
+                    other.is_pinned = false;
+                    const unpinned = await QuestionRepository.save(other);
+                    socketService.emitToAdminRoom(q.event_id, 'question:updated', unpinned);
+                }
+            }
+        }
+
+        q.is_pinned = newPinnedState;
+        const saved = await QuestionRepository.save(q);
+        socketService.emitToAdminRoom(q.event_id, 'question:updated', saved);
+        socketService.emitToDisplayRoom(q.event.event_code, 'question:pinned', { id: newPinnedState ? id : null });
         return saved;
     }
 
