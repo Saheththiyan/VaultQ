@@ -18,7 +18,12 @@ export const submitQuestionDto = z.object({
     content: z.string().min(5, 'Min 5 characters').max(500, 'Max 500 characters').trim(),
 });
 
+export const editQuestionDto = z.object({
+    content: z.string().min(5, 'Min 5 characters').max(500, 'Max 500 characters').trim(),
+});
+
 export type SignupDto = z.infer<typeof signupDto>;
 export type LoginDto = z.infer<typeof loginDto>;
 export type CreateEventDto = z.infer<typeof createEventDto>;
 export type SubmitQuestionDto = z.infer<typeof submitQuestionDto>;
+export type EditQuestionDto = z.infer<typeof editQuestionDto>;

@@ -73,6 +73,19 @@ export class QuestionService {
         return saved;
     }
 
+    async editQuestion(id: string, adminId: string, content: string): Promise<Question> {
+        const q = await QuestionRepository.findOne({ where: { id }, relations: ['event'] });
+        if (!q) throw new Error('Question not found');
+        if (q.event.admin_id !== adminId) throw new Error('Unauthorized');
+        if (q.status !== QuestionStatus.PENDING && q.status !== QuestionStatus.APPROVED)
+            throw new Error('Only pending or approved questions can be edited');
+        q.content = content;
+        const saved = await QuestionRepository.save(q);
+        socketService.emitToAdminRoom(q.event_id, 'question:updated', saved);
+        if (q.is_visible) socketService.emitToDisplayRoom(q.event.event_code, 'question:visible', saved);
+        return saved;
+    }
+
     async pinQuestion(id: string, adminId: string): Promise<Question> {
         const q = await QuestionRepository.findOne({ where: { id }, relations: ['event'] });
         if (!q) throw new Error('Question not found');
