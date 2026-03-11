@@ -4,6 +4,7 @@ export interface Question {
     content: string;
     status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'ANSWERED';
     is_visible: boolean;
+    is_pinned: boolean;
     created_at: string;
 }
 

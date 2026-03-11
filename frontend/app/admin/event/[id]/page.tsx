@@ -26,6 +26,8 @@ export default function EventModerationPage({ params }: { params: { id: string }
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState<string | null>(null);
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [editDraft, setEditDraft] = useState('');
     const [alert, setAlert] = useState<{ title: string; message: string; type: 'success' | 'error' | 'warning' | 'info' } | null>(null);
     const [confirmDialog, setConfirmDialog] = useState<{ title: string; message: string; onConfirm: () => void } | null>(null);
 
@@ -95,6 +97,22 @@ export default function EventModerationPage({ params }: { params: { id: string }
         ANSWERED: questions.filter(q => q.status === 'ANSWERED').length,
     };
 
+    const startEdit = (q: Question) => { setEditingId(q.id); setEditDraft(q.content); };
+    const cancelEdit = () => { setEditingId(null); setEditDraft(''); };
+    const saveEdit = async (qid: string) => {
+        const trimmed = editDraft.trim();
+        if (trimmed.length < 5) { setAlert({ title: 'Too short', message: 'Question must be at least 5 characters.', type: 'warning' }); return; }
+        setActionLoading(qid + 'edit');
+        try {
+            const res = await api.patch<Question>(`/api/admin/questions/${qid}/edit`, { content: trimmed });
+            setQuestions(prev => prev.map(q => q.id === qid ? res.data : q));
+            cancelEdit();
+        } catch (err: unknown) {
+            const e = err as { response?: { data?: { error?: string } } };
+            setAlert({ title: 'Edit Failed', message: e.response?.data?.error || 'Failed to save edit.', type: 'error' });
+        } finally { setActionLoading(null); }
+    };
+
     const logout = async () => { await api.post('/api/admin/logout'); router.push('/admin/login'); };
 
     return (
@@ -155,7 +173,45 @@ export default function EventModerationPage({ params }: { params: { id: string }
                             <div key={q.id} className="bg-slate-900 border border-slate-800 rounded-xl p-3 sm:p-4 hover:border-slate-700 transition group">
                                 <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-white text-sm sm:text-base leading-relaxed">{q.content}</p>
+                                        {editingId === q.id ? (
+                                            <div className="flex flex-col gap-2">
+                                                <textarea
+                                                    value={editDraft}
+                                                    onChange={e => setEditDraft(e.target.value)}
+                                                    rows={3}
+                                                    className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-violet-500 text-white text-sm sm:text-base leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-violet-500"
+                                                />
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        onClick={() => saveEdit(q.id)}
+                                                        disabled={!!actionLoading}
+                                                        className="px-3 py-1.5 text-xs sm:text-sm rounded-lg bg-violet-600 hover:bg-violet-500 text-white font-medium transition disabled:opacity-50">
+                                                        {actionLoading === q.id + 'edit' ? '…' : 'Save'}
+                                                    </button>
+                                                    <button
+                                                        onClick={cancelEdit}
+                                                        disabled={!!actionLoading}
+                                                        className="px-3 py-1.5 text-xs sm:text-sm rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 font-medium transition disabled:opacity-50">
+                                                        Cancel
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-start gap-2 group/content">
+                                                <p className="text-white text-sm sm:text-base leading-relaxed flex-1">{q.content}</p>
+                                                {(q.status === 'PENDING' || q.status === 'APPROVED') && (
+                                                    <button
+                                                        onClick={() => startEdit(q)}
+                                                        disabled={!!actionLoading}
+                                                        title="Edit question"
+                                                        className="flex-shrink-0 p-1 rounded text-slate-600 hover:text-violet-400 hover:bg-violet-500/10 transition opacity-0 group-hover:opacity-100 disabled:opacity-0">
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                        </svg>
+                                                    </button>
+                                                )}
+                                            </div>
+                                        )}
                                         <div className="flex items-center gap-3 mt-2">
                                             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[q.status]}`}>{q.status}</span>
                                             <span className="text-xs text-slate-600">{new Date(q.created_at).toLocaleTimeString()}</span>
@@ -178,6 +234,14 @@ export default function EventModerationPage({ params }: { params: { id: string }
                                         )}
                                         {q.status === 'APPROVED' && (
                                             <>
+                                                <button onClick={() => action('pin', q.id)} disabled={!!actionLoading}
+                                                    className={`px-3 sm:px-4 py-2 sm:py-1.5 text-xs sm:text-sm rounded-lg font-medium transition disabled:opacity-50 min-h-[44px] sm:min-h-0 ${
+                                                        q.is_pinned
+                                                            ? 'bg-violet-500/25 text-violet-300 hover:bg-violet-500/15'
+                                                            : 'bg-slate-700/50 text-slate-400 hover:bg-violet-500/15 hover:text-violet-400'
+                                                    }`}>
+                                                    {actionLoading === q.id + 'pin' ? '…' : q.is_pinned ? '★ Pinned' : '☆ Pin'}
+                                                </button>
                                                 <button onClick={() => action('mark-answered', q.id)} disabled={!!actionLoading}
                                                     className="px-3 sm:px-4 py-2 sm:py-1.5 text-xs sm:text-sm rounded-lg bg-blue-500/15 hover:bg-blue-500/25 text-blue-400 font-medium transition disabled:opacity-50 min-h-[44px] sm:min-h-0">
                                                     {actionLoading === q.id + 'mark-answered' ? '…' : 'Answered'}

@@ -61,3 +61,19 @@ export const deleteQuestion = async (req: Request & { adminId?: string }, res: R
     }
     catch (err) { handleErr(res, err); }
 };
+
+export const pinQuestion = async (req: Request & { adminId?: string }, res: Response): Promise<void> => {
+    try { 
+        if (!req.adminId) { res.status(401).json({ error: 'Unauthorized' }); return; }
+        res.json(await questionService.pinQuestion(req.params.id, req.adminId)); 
+    }
+    catch (err) { handleErr(res, err); }
+};
+
+export const editQuestion = async (req: Request & { adminId?: string }, res: Response): Promise<void> => {
+    try {
+        if (!req.adminId) { res.status(401).json({ error: 'Unauthorized' }); return; }
+        res.json(await questionService.editQuestion(req.params.id, req.adminId, req.body.content));
+    }
+    catch (err) { handleErr(res, err); }
+};

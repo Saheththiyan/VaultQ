@@ -12,10 +12,17 @@ export default function DisplayPage({ params }: { params: { eventCode: string } 
     const [loading, setLoading] = useState(true);
     const [connected, setConnected] = useState(false);
 
+    const sortQuestions = (qs: Question[]) =>
+        [...qs].sort((a, b) => {
+            if (a.is_pinned && !b.is_pinned) return -1;
+            if (!a.is_pinned && b.is_pinned) return 1;
+            return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        });
+
     const fetchQuestions = useCallback(async () => {
         try {
             const res = await api.get<Question[]>(`/api/events/${eventCode}/display`);
-            setQuestions(res.data);
+            setQuestions(sortQuestions(res.data));
         } catch { /* ignored */ }
         finally { setLoading(false); }
     }, [eventCode]);
@@ -30,21 +37,28 @@ export default function DisplayPage({ params }: { params: { eventCode: string } 
 
         const onVisible = (q: Question) => {
             setQuestions(prev => {
-                if (prev.find(x => x.id === q.id)) return prev.map(x => x.id === q.id ? q : x);
-                return [...prev, q];
+                const updated = prev.find(x => x.id === q.id)
+                    ? prev.map(x => x.id === q.id ? q : x)
+                    : [...prev, q];
+                return sortQuestions(updated);
             });
         };
         const onHidden = (q: Question) => setQuestions(prev => prev.filter(x => x.id !== q.id));
         const onRemoved = ({ id }: { id: string }) => setQuestions(prev => prev.filter(x => x.id !== id));
+        const onPinned = ({ id }: { id: string | null }) => {
+            setQuestions(prev => sortQuestions(prev.map(q => ({ ...q, is_pinned: q.id === id }))));
+        };
 
         socket.on('question:visible', onVisible);
         socket.on('question:hidden', onHidden);
         socket.on('question:removed', onRemoved);
+        socket.on('question:pinned', onPinned);
 
         return () => {
             socket.off('question:visible', onVisible);
             socket.off('question:hidden', onHidden);
             socket.off('question:removed', onRemoved);
+            socket.off('question:pinned', onPinned);
             disconnectSocket();
         };
     }, [fetchQuestions, eventCode]);
@@ -119,12 +133,12 @@ export default function DisplayPage({ params }: { params: { eventCode: string } 
                                     style={{ animationDelay: `${i * 0.05}s` }}
                                 >
                                     <div className={`rounded-2xl px-4 sm:px-6 md:px-8 py-4 sm:py-6 ${
-                                        i === 0 
+                                        q.is_pinned
                                             ? 'bg-white border-2 border-slate-300 shadow-xl' 
                                             : 'bg-slate-900/60 border border-slate-700/50 backdrop-blur'
                                     }`}>
                                         <p className={`text-lg sm:text-xl md:text-2xl lg:text-3xl leading-relaxed ${
-                                            i === 0 
+                                            q.is_pinned
                                                 ? 'text-slate-900 font-bold' 
                                                 : 'text-white font-light'
                                         }`}>
