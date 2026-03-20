@@ -17,7 +17,7 @@ export const AppDataSource = new DataSource({
     logging: false,
     ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false, // Enable SSL for production
     entities: [Admin, Event, Question],
-    migrations: ['src/migrations/*.ts'],
+    migrations: [process.env.NODE_ENV === 'production' ? 'dist/migrations/*.js' : 'src/migrations/*.ts'],
     poolSize: 10,
     extra: { max: 10, min: 2, idleTimeoutMillis: 30000, connectionTimeoutMillis: 10000 },
 });
