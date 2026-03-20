@@ -20,5 +20,6 @@ export class Question {
     @Index()
     @Column({ type: 'enum', enum: QuestionStatus, default: QuestionStatus.PENDING }) status!: QuestionStatus;
     @Column({ type: 'boolean', default: false }) is_visible!: boolean;
+    @Column({ type: 'boolean', default: false }) is_pinned!: boolean;
     @CreateDateColumn() created_at!: Date;
 }

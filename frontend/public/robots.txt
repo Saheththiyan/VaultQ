@@ -1,0 +1,15 @@
+# Allow all crawlers
+User-agent: *
+Allow: /
+
+# Allow public event pages
+Allow: /e/*
+Allow: /display/*
+
+# Block admin and API routes from indexing
+Disallow: /admin/*
+Disallow: /api/*
+Disallow: /_next/*
+
+# Sitemap location
+Sitemap: http://localhost:3000/sitemap.xml
